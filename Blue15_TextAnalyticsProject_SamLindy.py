@@ -172,7 +172,7 @@ def count_unique(term_vec):
 
 ################################################################################
 
-def impact_score(term_vec_us):
+def impact_score(term_vec_us_highimp):
     """
     Creates data frame of impact scores.
     :param term_vec_us: term vector of unstemmed terms
@@ -183,12 +183,18 @@ def impact_score(term_vec_us):
     
     #Create dataframe to store results
     df_impact_score = pd.DataFrame(columns =  ["Impact_Score", "Sentiment_Score"])
-    for i in range(0, len(term_vec_us)):
-        impact_score = df_reddit['score'][i]
-        sentence = " ".join(term_vec_us[i])
+    
+    #Loop through high impact rows 
+    i = 0
+    for index, row in df_reddit_highimp.iterrows():
+        impact_score = df_reddit_highimp['score'][index]
+        sentence = " ".join(term_vec_us_highimp[i])
         sentiment_score = sentiment_analyzer.polarity_scores( sentence )
         df_impact_score.loc[i] = [impact_score,sentiment_score['compound']]
-
+        
+        i += 1
+         
+    df_impact_score.to_csv('vader_sentiment_impact_score.csv',index = False)
     return df_impact_score
 
 ################################################################################
@@ -223,7 +229,7 @@ def nrc_sentiment(term_vec_us_highimp):
             for affect in sentiment.affect_list:
                 sentiment_count.loc[affect] += 1/sum(sentiment.raw_emotion_scores.values())
 
-    sentiment_count.to_csv('sentiment_count.csv',index = True)
+    sentiment_count.to_csv('NRC_sentiment_count.csv',index = True)
     return sentiment_count
 
 
@@ -236,7 +242,7 @@ def valence_arousal(term_vec_us_highimp):
     :return: sentiment_count data frame of sentiments and counts
     """
     #Create empty data frame for impact score, valence, arousal, and corresponding emotion
-    df_impact_valaro = pd.DataFrame(columns =  ["Impact_Score", "Valence", "Arousal", "Emotion"])
+    df_impact_valaro = pd.DataFrame(columns =  ["Impact_Score", "Valence", "Arousal", "Emotion", "Title", "Body"])
     
     #Loop through high impact rows 
     i = 0
@@ -247,11 +253,15 @@ def valence_arousal(term_vec_us_highimp):
         arousal = sentiment.sentiment( sentence )['arousal']
         emotion = sentiment.describe(valence, arousal)
         
-        df_impact_valaro.loc[i] = [impact_score, valence, arousal, emotion]
+        #Add Title and Body
+        title = df_reddit_highimp['title'][index]
+        body = df_reddit_highimp['body'][index]
+        
+        df_impact_valaro.loc[i] = [impact_score, valence, arousal, emotion, title, body]
         i += 1
     
     #Write data frame to csv (exclude data points without valence)
-    df_impact_valaro[df_impact_valaro['Valence'] != 0].to_csv('df_impact_valaro.csv',index = False)
+    df_impact_valaro[df_impact_valaro['Valence'] != 0].to_csv('ANEW_sentiment_impact_valaro.csv',index = False)
     
     return df_impact_valaro
 
@@ -286,6 +296,9 @@ term_vec = remove_stopwords(term_vec)
 
 #Store unstemmed term vector for sentiment analysis
 term_vec_us = copy.deepcopy(term_vec)
+
+#Subset unstemmed term vector to only include high impact posts
+term_vec_us_highimp = [term_vec_us[i] for i in df_reddit_highimp.index]
     
 # Porter stem remaining terms
 term_vec = porter_stem(term_vec)
@@ -294,27 +307,19 @@ term_vec = porter_stem(term_vec)
 # #4. Look at count of unique terms
 # ##########################################################################
 
-df_uniqcount = count_unique(term_vec)
+#df_uniqcount = count_unique(term_vec)
 
 #Look at most common words across all documents
-df_uniqcount['Frequency'] = pd.to_numeric(df_uniqcount['Frequency']) #Convert Frequency column to integer for next line
-df_uniqcount.nlargest(10, columns="Frequency").tail(10)
+#df_uniqcount['Frequency'] = pd.to_numeric(df_uniqcount['Frequency']) #Convert Frequency column to integer for next line
+#df_uniqcount.nlargest(10, columns="Frequency").tail(10)
 
 ##########################################################################
 #5. Sentiment Analysis
 ##########################################################################
 #a. Post impact vs sentiment compound score
-df_impact_score = impact_score(term_vec_us)
+df_impact_score = impact_score(term_vec_us_highimp)
 
-#Write impact scores dataframe to a CSV
-df_impact_score.to_csv('Sentiment_Impact_Score.csv',index = False)
-
-#b. Subset unstemmed term vector to only include high impact posts
-cutoff = np.quantile(df_reddit['score'],0.8)
-df_reddit_highimp = df_reddit[df_reddit['score'] >= cutoff]
-term_vec_us_highimp = [term_vec_us[i] for i in df_reddit_highimp.index]
-
-#NRCLexicon sentiment frequency count
+#b. #NRCLexicon - sentiment frequency count for ten sentiments
 sentiment_count = nrc_sentiment(term_vec_us_highimp)
 print(sentiment_count)
 
