@@ -182,7 +182,7 @@ def impact_score(term_vec_us_highimp):
     sentiment_analyzer = SentimentIntensityAnalyzer()
     
     #Create dataframe to store results
-    df_impact_score = pd.DataFrame(columns =  ["Impact_Score", "Sentiment_Score"])
+    df_impact_score = pd.DataFrame(columns =  ["Impact_Score", "Sentiment_Score", "Title", "Body"])
     
     #Loop through high impact rows 
     i = 0
@@ -190,7 +190,9 @@ def impact_score(term_vec_us_highimp):
         impact_score = df_reddit_highimp['score'][index]
         sentence = " ".join(term_vec_us_highimp[i])
         sentiment_score = sentiment_analyzer.polarity_scores( sentence )
-        df_impact_score.loc[i] = [impact_score,sentiment_score['compound']]
+        title = df_reddit_highimp['title'][index]
+        body = df_reddit_highimp['body'][index]
+        df_impact_score.loc[i] = [impact_score,sentiment_score['compound'],title,body]
         
         i += 1
          
