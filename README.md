@@ -1,4 +1,5 @@
-# Text Analytics Team Project and Presentation, Institute for Advanced Analytics <br>
+# Text Analytics Team Project and Presentation
+Institute for Advanced Analytics <br>
 Professor Christopher Healey <br>
 October 21, 2021 <br>
 Authors: Sam Jasper and Lindy Bustabad  <br>
