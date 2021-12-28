@@ -1,8 +1,7 @@
-Text Analytics Team Project and Presentation, Institute for Advanced Analytics
-Professor Christopher Healey
-October 21, 2021
-Authors: Sam Jasper and Lindy Bustabad  
-
+Text Analytics Team Project and Presentation, Institute for Advanced Analytics <br>
+Professor Christopher Healey <br>
+October 21, 2021 <br>
+Authors: Sam Jasper and Lindy Bustabad  <br>
 
 This project uses posts and comments from the Reddit thread https://www.reddit.com/r/VaccineMyths/ since January 2014. Our dataset consists of 1,510 rows (posts) and associated information, such as the post’s title, impact, user id, URL, number of comments, body text, and creation timestamp. 
 
